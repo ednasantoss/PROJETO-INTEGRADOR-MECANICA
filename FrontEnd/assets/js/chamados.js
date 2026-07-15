@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:9090/api';
+const API_URL = 'https://api-mecanica-4rc9.onrender.com/api';
 
 const clienteData = localStorage.getItem('clienteLogado');
 

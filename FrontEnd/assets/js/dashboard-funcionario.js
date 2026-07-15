@@ -36,7 +36,7 @@ async function carregarOrdensServico() {
     const tabela = document.getElementById('tabelaOrdensServico');
 
     try {
-        const response = await fetch('http://localhost:9090/api/chamados');
+        const response = await fetch('https://api-mecanica-4rc9.onrender.com/api/chamados');
         const dados = await response.json();
 
         if (!response.ok) throw new Error(dados.erro || 'Erro ao carregar Ordens de Serviço.');
@@ -101,7 +101,7 @@ async function alterarStatus(idOs, statusAtual) {
 
     if (confirm(`Deseja alterar o status da Ordem de Serviço #${idOs} para "${novoStatus}"?`)) {
         try {
-            const response = await fetch(`http://localhost:9090/api/chamados/${idOs}`, {
+            const response = await fetch(`'https://api-mecanica-4rc9.onrender.com/api/chamados/${idOs}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ status: novoStatus })
@@ -138,7 +138,7 @@ async function abrirModalFuncionario(idOS) {
 
     try {
 
-        const response = await fetch("http://localhost:9090/api/funcionarios");
+        const response = await fetch("https://api-mecanica-4rc9.onrender.com/api/funcionarios");
         const funcionarios = await response.json();
 
         select.innerHTML = `<option value="" disabled selected>Selecione um funcionário</option>` +
@@ -169,7 +169,7 @@ document.getElementById("btnSalvarFuncionario").addEventListener("click", async 
     }
 
     try {
-        const response = await fetch(`http://localhost:9090/api/chamados/${ordemSelecionada}/funcionario`, {
+        const response = await fetch(`'https://api-mecanica-4rc9.onrender.com/api/chamados/${ordemSelecionada}/funcionario`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ idFuncionario: idFuncionarioSelecionado })

@@ -7,7 +7,7 @@ document.getElementById('formCadastroCliente').addEventListener('submit', async 
     const senha = document.getElementById('senha').value;
 
     try {
-        const response = await fetch('http://localhost:9090/api/clientes/cadastro', {
+        const response = await fetch('https://api-mecanica-4rc9.onrender.com/api/clientes/cadastro', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
