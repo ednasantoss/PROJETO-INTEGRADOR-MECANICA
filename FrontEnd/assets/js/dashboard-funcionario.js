@@ -101,7 +101,7 @@ async function alterarStatus(idOs, statusAtual) {
 
     if (confirm(`Deseja alterar o status da Ordem de Serviço #${idOs} para "${novoStatus}"?`)) {
         try {
-            const response = await fetch(`'https://api-mecanica-4rc9.onrender.com/api/chamados/${idOs}`, {
+            const response = await fetch(`https://api-mecanica-4rc9.onrender.com/api/chamados/${idOs}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ status: novoStatus })
@@ -169,7 +169,7 @@ document.getElementById("btnSalvarFuncionario").addEventListener("click", async 
     }
 
     try {
-        const response = await fetch(`'https://api-mecanica-4rc9.onrender.com/api/chamados/${ordemSelecionada}/funcionario`, {
+        const response = await fetch(`https://api-mecanica-4rc9.onrender.com/api/chamados/${ordemSelecionada}/funcionario`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ idFuncionario: idFuncionarioSelecionado })

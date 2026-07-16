@@ -5,7 +5,7 @@ document.getElementById('formLoginCliente').addEventListener('submit', async (e)
     const senha = document.getElementById('senha').value;
 
     try {
-        const response = await fetch('https://api-mecanica-4rc9.onrender.com/api/login', {
+        const response = await fetch('https://api-mecanica-4rc9.onrender.com/api/clientes/login', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
