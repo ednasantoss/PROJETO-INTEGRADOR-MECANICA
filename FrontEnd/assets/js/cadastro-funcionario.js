@@ -21,7 +21,7 @@ document.getElementById('formCadastroFuncionario').addEventListener('submit', as
     const senha = document.getElementById('senha').value;
 
     try {
-        const response = await fetch('https://api-mecanica-4rc9.onrender.com/api/funcionarios/cadastro', {
+        const response = await fetch('https://autoresgate-backend.onrender.com/api/funcionarios/cadastro', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

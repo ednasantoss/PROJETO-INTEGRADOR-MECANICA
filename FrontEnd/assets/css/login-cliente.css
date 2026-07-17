@@ -4,6 +4,7 @@
     box-sizing: border-box;
 }
 
+
 body {
     background-color: #121214;
     color: #e1e1e6;
@@ -16,7 +17,10 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 20px;
+    background-image: url('../img/foto.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
 }
 
 .auth-card {

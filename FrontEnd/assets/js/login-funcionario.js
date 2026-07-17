@@ -1,4 +1,4 @@
-const API_URL = 'https://api-mecanica-4rc9.onrender.com/api';
+const API_URL = 'https://autoresgate-backend.onrender.com/api';
 
 document.addEventListener('DOMContentLoaded', () => {
     if (verificarLogado()) {

@@ -49,7 +49,7 @@ function configurarModal() {
         };
 
         try {
-            const response = await fetch('https://api-mecanica-4rc9.onrender.com/api/veiculos/cadastro', {
+            const response = await fetch('https://autoresgate-backend.onrender.com/api/veiculos/cadastro', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(dadosCarro)
@@ -76,7 +76,7 @@ async function carregarVeiculos() {
     const grid = document.getElementById('gridCarros');
 
     try {
-        const response = await fetch(`https://api-mecanica-4rc9.onrender.com/api/veiculos?id_cliente=${cliente.id_cliente}`);
+        const response = await fetch(`https://autoresgate-backend.onrender.com/api/veiculos?id_cliente=${cliente.id_cliente}`);
         const carros = await response.json();
 
         if (!response.ok) throw new Error(carros.erro || 'Erro ao buscar veículos.');
