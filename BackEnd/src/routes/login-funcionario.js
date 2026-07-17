@@ -6,7 +6,7 @@ const database = require('../config/db');
 router.post('/cadastro', (req, res) => {
     const { nome, email, senha, cargo, cargoQuemCadastrou } = req.body;
 
-    if (!cargoQuemCadastrou || cargoQuemCadastrou.toLowerCase() !== 'administrador') {
+    if ((req.get('x-cargo') || cargoQuemCadastrou || '').toLowerCase() !== 'administrador') {
         return res.status(403).json({ erro: 'Acesso negado. Apenas administradores podem cadastrar novos funcionários.' });
     }
 
@@ -62,14 +62,56 @@ router.post('/login', (req, res) => {
 
 });
 
-router.get('/', (req, res) => {
-    const query = 'SELECT id_funcionario, nome, cargo FROM funcionario';
+router.get('/', exigirAdministrador, (req, res) => {
+    const query = 'SELECT id_funcionario, nome, email, cargo FROM funcionario ORDER BY nome';
     database.query(query, (err, results) => {
         if (err) {
             console.error(err);
             return res.status(500).json({ erro: 'Erro ao buscar funcionários.' });
         }
         res.json(results);
+    });
+});
+
+function exigirAdministrador(req, res, next) {
+    if ((req.get('x-cargo') || '').toLowerCase() !== 'administrador') {
+        return res.status(403).json({ erro: 'Apenas administradores podem gerenciar funcionários.' });
+    }
+    next();
+}
+
+router.put('/:id', exigirAdministrador, (req, res) => {
+    const { id } = req.params;
+    const { nome, email, cargo, senha } = req.body;
+    if (!nome || !email || !cargo) return res.status(400).json({ erro: 'Nome, e-mail e cargo são obrigatórios.' });
+
+    const finalizar = (senhaHash) => {
+        const query = senhaHash
+            ? 'UPDATE funcionario SET nome = ?, email = ?, cargo = ?, senha = ? WHERE id_funcionario = ?'
+            : 'UPDATE funcionario SET nome = ?, email = ?, cargo = ? WHERE id_funcionario = ?';
+        const params = senhaHash ? [nome, email, cargo, senhaHash, id] : [nome, email, cargo, id];
+        database.query(query, params, (err, result) => {
+            if (err) return res.status(500).json({ erro: 'Erro ao atualizar funcionário.' });
+            if (!result.affectedRows) return res.status(404).json({ erro: 'Funcionário não encontrado.' });
+            res.json({ mensagem: 'Funcionário atualizado com sucesso!' });
+        });
+    };
+    if (senha) return bcrypt.hash(senha, 10, (err, hash) => err ? res.status(500).json({ erro: 'Erro ao processar senha.' }) : finalizar(hash));
+    finalizar(null);
+});
+
+router.delete('/:id', exigirAdministrador, (req, res) => {
+    const { id } = req.params;
+    const idLogado = Number(req.get('x-funcionario-id'));
+    if (Number(id) === idLogado) return res.status(400).json({ erro: 'Você não pode excluir o próprio acesso.' });
+
+    database.query('UPDATE ordem_servico SET id_funcionario = NULL WHERE id_funcionario = ?', [id], (updateErr) => {
+        if (updateErr) return res.status(500).json({ erro: 'Erro ao desvincular os chamados do funcionário.' });
+        database.query('DELETE FROM funcionario WHERE id_funcionario = ?', [id], (err, result) => {
+            if (err) return res.status(500).json({ erro: 'Erro ao excluir funcionário.' });
+            if (!result.affectedRows) return res.status(404).json({ erro: 'Funcionário não encontrado.' });
+            res.json({ mensagem: 'Funcionário excluído com sucesso!' });
+        });
     });
 });
 

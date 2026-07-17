@@ -81,6 +81,40 @@ router.get('/cliente/:id_cliente', (req, res) => {
     });
 });
 
+router.put('/:id/detalhes', (req, res) => {
+    const { id } = req.params;
+    const { titulo, descricao, id_cliente } = req.body;
+    const ehAdministrador = (req.get('x-cargo') || '').toLowerCase() === 'administrador';
+    if (!titulo || (!id_cliente && !ehAdministrador)) return res.status(400).json({ erro: 'Título e cliente são obrigatórios.' });
+
+    const query = ehAdministrador
+        ? `UPDATE ordem_servico SET titulo = ?, descricao = ? WHERE id_os = ?`
+        : `UPDATE ordem_servico SET titulo = ?, descricao = ? WHERE id_os = ? AND id_cliente = ? AND status <> 'Finalizado'`;
+    const params = ehAdministrador ? [titulo, descricao || null, id] : [titulo, descricao || null, id, id_cliente];
+    database.query(query, params, (err, result) => {
+        if (err) return res.status(500).json({ erro: 'Erro ao atualizar o chamado.' });
+        if (!result.affectedRows) return res.status(409).json({ erro: 'Chamado não encontrado ou não pode mais ser editado.' });
+        res.json({ mensagem: 'Chamado atualizado com sucesso!' });
+    });
+});
+
+router.delete('/:id', (req, res) => {
+    const { id } = req.params;
+    const { id_cliente } = req.body || {};
+    const ehAdministrador = (req.get('x-cargo') || '').toLowerCase() === 'administrador';
+
+    if (!id_cliente && !ehAdministrador) return res.status(400).json({ erro: 'Cliente não identificado.' });
+    const query = ehAdministrador
+        ? `DELETE FROM ordem_servico WHERE id_os = ?`
+        : `DELETE FROM ordem_servico WHERE id_os = ? AND id_cliente = ? AND status = 'Em Análise'`;
+    const params = ehAdministrador ? [id] : [id, id_cliente];
+    database.query(query, params, (err, result) => {
+        if (err) return res.status(500).json({ erro: 'Erro ao excluir o chamado.' });
+        if (!result.affectedRows) return res.status(409).json({ erro: 'Chamado não encontrado ou não pode ser excluído.' });
+        res.json({ mensagem: 'Chamado excluído com sucesso!' });
+    });
+});
+
 router.put('/:id', (req, res) => {
     const { id } = req.params;
     const { status } = req.body;
@@ -90,11 +124,16 @@ router.put('/:id', (req, res) => {
         return res.status(400).json({ erro: `Status inválido. Use um de: ${statusValidos.join(', ')}.` });
     }
 
+    const ehAdministrador = (req.get('x-cargo') || '').toLowerCase() === 'administrador';
+    const idFuncionario = Number(req.get('x-funcionario-id'));
+    if (!ehAdministrador && !idFuncionario) return res.status(403).json({ erro: 'Funcionário não identificado.' });
+
     const query = status === 'Finalizado'
         ? 'UPDATE ordem_servico SET status = ?, data_de_finalizacao = NOW() WHERE id_os = ?'
         : 'UPDATE ordem_servico SET status = ? WHERE id_os = ?';
-
-    database.query(query, [status, id], (err, result) => {
+    const queryComPermissao = ehAdministrador ? query : query.replace('WHERE id_os = ?', 'WHERE id_os = ? AND id_funcionario = ?');
+    const params = ehAdministrador ? [status, id] : [status, id, idFuncionario];
+    database.query(queryComPermissao, params, (err, result) => {
         if (err) {
             console.error('Erro ao atualizar chamado:', err);
             return res.status(500).json({ erro: 'Erro interno ao atualizar o status.' });
@@ -108,6 +147,9 @@ router.put('/:id', (req, res) => {
 
 router.put('/:id/funcionario', (req, res) => {
 
+    if ((req.get('x-cargo') || '').toLowerCase() !== 'administrador') {
+        return res.status(403).json({ erro: 'Apenas administradores podem atribuir chamados.' });
+    }
     const { id } = req.params;
     const { idFuncionario } = req.body;
 
